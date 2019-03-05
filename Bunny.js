@@ -266,7 +266,7 @@ function playAnimations()
                 ],
             loop: loopAnimation,
             duration:duration * 1000,
-            //easing:TWEEN.Easing.Bounce.InOut,
+            easing:TWEEN.Easing.Linear.None,
         });
         crateAnimator.start();
         
