@@ -17,6 +17,7 @@ animateWaves = true,
 animateLight = true,
 animateWater = true,
 loopAnimation = false;
+var inc = 360 / numObjects;
 var positions = [];
 var llave = [];
 var rotations  = [];
@@ -99,8 +100,8 @@ function createScene(canvas)
 
     // Add  a camera so we can view the scene
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 4000 );
-    //camera.position.set(0, 80, 190);
-    camera.position.set(0, 300, 0);
+    camera.position.set(0, 80, 190);
+    //camera.position.set(0, 300, 0);
     scene.add(camera);
     
     // Create a group to hold all the objects
@@ -181,7 +182,7 @@ function createScene(canvas)
 }
 function keys()
 {   
-    var inc = 360 / numObjects;
+    
     var faltante = numObjects/4;
     var radius = 20;
     var salto = 0 ;
@@ -210,6 +211,7 @@ function keys()
        var x = ((Math.cos(((inc * i)) * Math.PI / 180)) * (radius * 3));
        var z = ((Math.sin(((inc * i)) * Math.PI / 90)) * radius);
        positions.push({'x':x,'y':y,'z': z });
+       
        llave.push(i*.00264);
     }
     positions.push({'x':0,'y':-4,'z': 0 });
@@ -220,15 +222,16 @@ function rota()
 {
     var faltante = numObjects/4;
     var theta = 0;
-    for (i=0;i<numObjects;i++) 
+    for (i=0;i<numObjects-1;i++) 
     {
         x1 = positions[i]['x'];
     	y1 = positions[i]['z'];
         x2 = positions[(i + 1) % numObjects]['x'];
         y2 = positions[(i + 1) % numObjects]['z'];
-        theta = (Math.atan2(x2 ,y2 ));
+        theta = (Math.atan2(x2 - x1, y2 - y1))+Math.PI/2;
         rotations.push({ y : theta });
     }
+    rotations.push({ y : theta });
     return rotations
 }
 function playAnimations()
