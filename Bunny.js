@@ -22,6 +22,8 @@ var llave = [];
 var rotations  = [];
 var objLoader = null
 var waterMapUrl = "images/grass.png";
+
+var SHADOW_MAP_WIDTH = 2048, SHADOW_MAP_HEIGHT = 2048;
 function run()
 {
     requestAnimationFrame(function() { run(); });
@@ -86,55 +88,94 @@ function createScene(canvas)
     // Set the viewport size
     renderer.setSize(canvas.width, canvas.height);
 
+     // Turn on shadows
+     renderer.shadowMap.enabled = true;
+    
+     // Options are THREE.BasicShadowMap, THREE.PCFShadowMap, PCFSoftShadowMap
+     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
     // Create a new Three.js scene
     scene = new THREE.Scene();
 
     // Add  a camera so we can view the scene
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 4000 );
-    camera.position.set(0, 80, 190);
-    //camera.position.set(0, 300, 0);
+    //camera.position.set(0, 80, 190);
+    camera.position.set(0, 300, 0);
     scene.add(camera);
     
     // Create a group to hold all the objects
     root = new THREE.Object3D;
-    
+        
     // Add a directional light to show off the object
     directionalLight = new THREE.DirectionalLight( 0xffffff, 1);
 
     // Create and add all the lights
-    directionalLight.position.set(0, 1, 2);
+    // Directional light
+    directionalLight.position.set(0, 1, 6);
     root.add(directionalLight);
 
-    ambientLight = new THREE.AmbientLight ( 0x888888 );
+    // Spotlight
+    spotLight = new THREE.SpotLight (0x000000);
+    spotLight.position.set(2, 8, 15);
+    spotLight.target.position.set(-2, 0, -2);
+    root.add(spotLight);
+
+    spotLight.castShadow = true;
+
+    spotLight.shadow.camera.near = 1;
+    spotLight.shadow.camera.far = 200;
+    spotLight.shadow.camera.fov = 85;
+
+    spotLight.shadow.mapSize.width = 2048;
+    spotLight.shadow.mapSize.height = 2048;
+
+    // Ambient light
+    ambientLight = new THREE.AmbientLight ( 0x303030 );
     root.add(ambientLight);
-    
-    // Create a group to hold the objects
+
+    // Point light
+    pointLight = new THREE.PointLight(0xffffff, 1.5, 0);
+    pointLight.position.set(0,18,15);
+
+    pointLight.castShadow = true;
+
+    pointLight.shadow.camera.near = 1;
+    pointLight.shadow.camera.far = 150;
+    pointLight.shadow.camera.fov = 85;
+
+    pointLight.shadow.mapSize.width = SHADOW_MAP_WIDTH;
+    pointLight.shadow.mapSize.height = SHADOW_MAP_HEIGHT;
+
+    // Point light helper
+    var pointLightHelper = new THREE.PointLightHelper( pointLight, 1.1 );
+    root.add(pointLight);
+
+    root.add(pointLightHelper);
+
+    // Create the objects
+    loadObj();
+
     group = new THREE.Object3D;
     root.add(group);
 
     // Create a texture map
-    var waterMap = new THREE.TextureLoader().load(waterMapUrl);
-    waterMap.wrapS = waterMap.wrapT = THREE.RepeatWrapping;
-    waterMap.repeat.set(4, 4);
+    var grassMap = new THREE.TextureLoader().load(waterMapUrl);
+    grassMap.wrapS = grassMap.wrapT = THREE.RepeatWrapping;
+    grassMap.repeat.set(4, 4);
 
     var color = 0xffffff;
-    var ambient = 0x888888;
     
     // Put in a ground plane to show off the lighting
     geometry = new THREE.PlaneGeometry(200, 200, 50, 50);
-    waves = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:color, map:waterMap, side:THREE.DoubleSide}));
+    waves = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:color, map:grassMap, side:THREE.DoubleSide}));
     waves.rotation.x = -Math.PI / 2;
     waves.position.y = -4.7;
     
+    waves.castShadow = false;
+    waves.receiveShadow = true;
     // Add the waves to our group
     root.add( waves );
-    
-    // And put the geometry and material together into a mesh
-    var color = 0xffffff;
-    ambient = 0x888888;
-    
-    loadObj();
-    
+        
     // Now add the group to our scene
     scene.add( root );
 }
